@@ -1,0 +1,74 @@
+{
+  "questions": [
+    {
+      "answer": "Steve Jobs",
+      "image": "image_001.jpg",
+      "category": "personality",
+      "difficulty": "medium",
+      "description": "Apple founder - visible portrait"
+    },
+    {
+      "answer": "Google",
+      "image": "image_002.jpg",
+      "category": "logo",
+      "difficulty": "easy",
+      "description": "Search engine - logo"
+    },
+    {
+      "answer": "GPU",
+      "image": "image_003.jpg",
+      "category": "hardware",
+      "difficulty": "hard",
+      "description": "Graphics Processing Unit - NVIDIA chip"
+    },
+    {
+      "answer": "Linux",
+      "image": "image_004.jpg",
+      "category": "operating_system",
+      "difficulty": "medium",
+      "description": "Open-source OS kernel"
+    },
+    {
+      "answer": "Python",
+      "image": "image_005.jpg",
+      "category": "programming_language",
+      "difficulty": "easy",
+      "description": "Popular programming language - snake logo"
+    },
+    {
+      "answer": "Alan Turing",
+      "image": "image_006.jpg",
+      "category": "personality",
+      "difficulty": "hard",
+      "description": "Father of computer science and AI"
+    },
+    {
+      "answer": "ENIAC",
+      "image": "image_007.jpg",
+      "category": "history",
+      "difficulty": "hard",
+      "description": "First general purpose electronic computer (1946)"
+    },
+    {
+      "answer": "Arduino",
+      "image": "image_008.jpg",
+      "category": "hardware",
+      "difficulty": "medium",
+      "description": "Open-source microcontroller platform"
+    },
+    {
+      "answer": "Bitcoin",
+      "image": "image_009.jpg",
+      "category": "technology_concept",
+      "difficulty": "medium",
+      "description": "First cryptocurrency - blockchain"
+    },
+    {
+      "answer": "Wi-Fi",
+      "image": "image_010.jpg",
+      "category": "technology_concept",
+      "difficulty": "easy",
+      "description": "Wireless network protocol - signal icon"
+    }
+  ]
+}
