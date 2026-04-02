@@ -1,0 +1,106 @@
+{
+  "questions": [
+    {
+      "id": "q001",
+      "category": "personality",
+      "image_id": "img_6106",
+      "answer_hash": "b17d8e22be0a34aa38301b5dd21da68887b320c26602a20d85a7ba61cafaf44b",
+      "answer_salt": "27ffefc62223dafe59d8c30d5e6d0b61",
+      "answer_length": 10,
+      "difficulty": "medium",
+      "description": "Apple founder - visible portrait"
+    },
+    {
+      "id": "q002",
+      "category": "logo",
+      "image_id": "img_7651",
+      "answer_hash": "cb1aaf661ca4e294aca393164c6e8b7bbb93560f5e688a63b215137b0eae25c5",
+      "answer_salt": "dedf9f81625b1dd82bcb93eea0cd78d1",
+      "answer_length": 6,
+      "difficulty": "easy",
+      "description": "Search engine - logo"
+    },
+    {
+      "id": "q003",
+      "category": "hardware",
+      "image_id": "img_6733",
+      "answer_hash": "b4602b0724d875e7c40eeaa362c7e007c9878439ee31c8c9a072bb721c3cedc1",
+      "answer_salt": "ded462c8984770f2f0105e3a838a9eab",
+      "answer_length": 3,
+      "difficulty": "hard",
+      "description": "Graphics Processing Unit - NVIDIA chip"
+    },
+    {
+      "id": "q004",
+      "category": "operating_system",
+      "image_id": "img_8259",
+      "answer_hash": "894039d6824cb7e62d32972fc70bc6da94dfd9e218ddff76e1c814e23201810d",
+      "answer_salt": "ceb8460f6a1ef94e6cbc327ac3c9764a",
+      "answer_length": 5,
+      "difficulty": "medium",
+      "description": "Open-source OS kernel"
+    },
+    {
+      "id": "q005",
+      "category": "programming_language",
+      "image_id": "img_7765",
+      "answer_hash": "0ccedb27e783c9f2c23fe9c95e22b56ef96ec8cb92142fbe4fe4d13b3d1432a1",
+      "answer_salt": "3c82c217c2c86d2bcbd573856262681b",
+      "answer_length": 6,
+      "difficulty": "easy",
+      "description": "Popular programming language - snake logo"
+    },
+    {
+      "id": "q006",
+      "category": "personality",
+      "image_id": "img_2545",
+      "answer_hash": "ebb9ac29a3be99101f81a4801b57ce6ddb31508f496abbd7ae612154caa8046f",
+      "answer_salt": "e7372f768b39bebc98648d0042d06faa",
+      "answer_length": 11,
+      "difficulty": "hard",
+      "description": "Father of computer science and AI"
+    },
+    {
+      "id": "q007",
+      "category": "history",
+      "image_id": "img_3172",
+      "answer_hash": "452ff66ccbf72cd3335f2e224b9019710a203a97b1c83897acbba9fc2c21b07d",
+      "answer_salt": "8ce4d2483b275ce3c8d3ad792e82500f",
+      "answer_length": 5,
+      "difficulty": "hard",
+      "description": "First general purpose electronic computer (1946)"
+    },
+    {
+      "id": "q008",
+      "category": "hardware",
+      "image_id": "img_3357",
+      "answer_hash": "dd98f0e8302e4964a9f80a0f2c13f829eee0800f612dce7cc0db8cb758d33382",
+      "answer_salt": "5216a2cbc5656bcefe6308b1f8a7f183",
+      "answer_length": 7,
+      "difficulty": "medium",
+      "description": "Open-source microcontroller platform"
+    },
+    {
+      "id": "q009",
+      "category": "technology_concept",
+      "image_id": "img_3334",
+      "answer_hash": "5f8b7f0a8c0a62dc3b8b9ce2eb01645ee2876534ad8aea777ef48b2b99ea0ca4",
+      "answer_salt": "affe76277283e5ac1211f5f2189f0594",
+      "answer_length": 7,
+      "difficulty": "medium",
+      "description": "First cryptocurrency - blockchain"
+    },
+    {
+      "id": "q010",
+      "category": "technology_concept",
+      "image_id": "img_9475",
+      "answer_hash": "e8aa16190431f6c440a45053f5e551ae2b2026c16afcf3b33acb53df21428d32",
+      "answer_salt": "c8d334f006a6c5c0572b8f7d086e79f0",
+      "answer_length": 5,
+      "difficulty": "easy",
+      "description": "Wireless network protocol - signal icon"
+    }
+  ],
+  "prepared_at": "2026-03-31T13:14:22.004137",
+  "count": 10
+}
