@@ -1,32 +1,46 @@
 """
 Theme settings for Tkinter GUI.
-Color schemes, fonts, constants.
+Color schemes (modern), fonts, constants.
+
+Modern color palette inspired by contemporary design:
+- Clean, minimalist aesthetic
+- Gradient-friendly colors
+- Good contrast for accessibility
+- Professional appearance
 """
 
-# Colors
+# Modern Color Palette
+# Inspired by: Material Design 3, macOS design language, Tailwind CSS
 COLORS = {
-    "bg_primary": "#1e1e1e",      # Dark background
-    "bg_secondary": "#2d2d2d",    # Slightly lighter
-    "bg_tertiary": "#3d3d3d",     # Even lighter
-    "fg_primary": "#ffffff",      # White text
-    "fg_secondary": "#e0e0e0",    # Light gray text
-    "accent": "#0078d4",          # Blue accent
-    "success": "#107c10",         # Green (correct answer)
-    "warning": "#ffb900",         # Yellow (hint)
-    "danger": "#e81123",          # Red (wrong)
-    "cell_hidden": "#505050",     # Gray (hidden cell)
-    "cell_revealed": "#2d2d2d",   # Dark (revealed cell)
+    "bg_primary": "#0b1324",      # Main background
+    "bg_secondary": "#16213a",    # Card/top bar background
+    "bg_tertiary": "#223458",     # Surface background
+    "fg_primary": "#f1f5f9",      # Main text
+    "fg_secondary": "#a9b7d0",    # Secondary text
+    "accent": "#38bdf8",          # Cyan accent
+    "accent_hover": "#0ea5e9",    # Accent hover
+    "success": "#22c55e",         # Green success
+    "success_hover": "#16a34a",   # Success hover
+    "warning": "#f59e0b",         # Amber warning
+    "warning_hover": "#d97706",   # Warning hover
+    "danger": "#ef4444",          # Red danger
+    "danger_hover": "#dc2626",    # Danger hover
+    "cell_hidden": "#1f2937",     # Hidden overlay cells
+    "cell_revealed": "#0b1324",   # Revealed cell tint
+    "border": "#334155",          # Border color
+    "gradient_start": "#0b1324",  # Gradient start
+    "gradient_end": "#121f37",    # Gradient end
 }
 
-# Fonts
+# Modern Fonts
 FONTS = {
-    "title": ("Arial", 24, "bold"),
-    "heading": ("Arial", 16, "bold"),
-    "body": ("Arial", 12),
-    "small": ("Arial", 10),
-    "mono": ("Courier", 10),
-    "timer": ("Arial", 20, "bold"),
-    "score": ("Arial", 14, "bold"),
+    "title": ("Bahnschrift", 30, "bold"),
+    "heading": ("Bahnschrift", 16, "bold"),
+    "body": ("Segoe UI", 12),
+    "small": ("Segoe UI", 10),
+    "mono": ("Consolas", 10),
+    "timer": ("Bahnschrift", 24, "bold"),
+    "score": ("Bahnschrift", 17, "bold"),
 }
 
 # Dimensions
@@ -47,3 +61,10 @@ BUTTON_HEIGHT = 2
 
 # Animation
 ANIMATION_DURATION = 200  # ms
+
+# Border radius (for rounded corners, pseudocode)
+# Tkinter doesn't support native rounded corners, but we can use images or other workarounds
+BORDER_RADIUS = 8  # pixels (for reference)
+
+# Shadows (simulated with colors)
+SHADOW_COLOR = "#00000020"  # Semi-transparent black

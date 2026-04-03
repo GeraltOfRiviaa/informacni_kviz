@@ -1,360 +1,302 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
-prepare_questions.py - Příprava Quiz Dat (ADMIN SCRIPT)
+prepare_questions.py - Admin script for preparing quiz data.
 
-Tento skript transformuje sadu otázek s plaintext odpověďmi a obrázky
-do bezpečné struktury quiz aplikace.
+This script transforms plaintext authoring input into runtime-safe quiz data:
+1. Normalize and hash answers (SHA256 + salt)
+2. Randomize image_id values
+3. Copy images to assets/images using anonymized names
+4. Optionally clean original source images
 
-Bezpečnostní kroky:
-1. Normalizace odpovědí (lowercase, bez diakritiky)
-2. SHA256 hashing s salt
-3. Randomizace image_id (aby q001 neměl img_001!)
-4. Zašifrování obrázků v ZIP archívu
-5. Vyčištění originálních obrázků
-
-Použití:
+Usage:
     python prepare_questions.py
-
-Předpoklady:
-- Existuje adresář: original_data/questions_input.json
-- Existuje adresář: original_data/images/ s obrázky
-- Nainstalován: cryptography, pillow, requirements.txt
 """
 
-import json
 import hashlib
-import os
-import shutil
+import json
 import secrets
+import shutil
 import unicodedata
-import zipfile
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
-from datetime import datetime
 
-# Importy z services (ale zatím se budou inline, protože nejsou hotové)
-# from services.security import SecurityService
+from PIL import Image, ImageDraw
 
 
 class SecurityService:
-    """Dočasná implementace - později se přesune do services/"""
-    
+    """Small helper for answer normalization and hashing."""
+
     @staticmethod
     def normalize_text(text: str) -> str:
-        """
-        Normalizuje text: lowercase, bez diakritiky, bez mezer.
-        
-        Příklady:
-        - "Steve Jobs" → "stevejobs"
-        - "GOOGLE" → "google"
-        - "Štepán" → "stepan"
-        """
-        # Lowercase
-        text = text.lower().strip()
-        
-        # Odstranění diakritiky (kombinace znaků)
-        # NFKD = Compatibility Decomposition
-        nfkd_form = unicodedata.normalize('NFKD', text)
-        return ''.join([c for c in nfkd_form if not unicodedata.combining(c)])
-    
+        """Normalize to lowercase without diacritics and extra spaces."""
+        normalized = text.lower().strip()
+        normalized = " ".join(normalized.split())
+        nfkd = unicodedata.normalize("NFKD", normalized)
+        return "".join(c for c in nfkd if not unicodedata.combining(c))
+
     @staticmethod
     def generate_salt(length: int = 32) -> str:
-        """Generuje náhodný salt (hexadecimálně)."""
+        """Generate random hex salt."""
         return secrets.token_hex(length // 2)
-    
+
     @staticmethod
     def hash_sha256(text: str, salt: str = "") -> str:
-        """
-        Vrátí SHA256 hash textu.
-        
-        Args:
-            text: Text k zahashování
-            salt: Náhodný salt (připojuje se k textu)
-        
-        Returns:
-            Hexadecimální SHA256 hash
-        """
-        combined = text + salt
-        return hashlib.sha256(combined.encode('utf-8')).hexdigest()
+        """Create SHA256 hash from text + salt."""
+        return hashlib.sha256((text + salt).encode("utf-8")).hexdigest()
 
 
 class QuestionPreparer:
-    """Hlavní třída pro přípravu quiz dat."""
-    
-    def __init__(self):
+    """Main orchestrator for question preparation."""
+
+    _SUPPORTED_SUFFIXES = (".jpg", ".jpeg", ".png", ".webp", ".gif")
+
+    def __init__(self) -> None:
         self.security = SecurityService()
         self.base_dir = Path(__file__).parent
         self.original_data_dir = self.base_dir / "original_data"
+        self.source_images_dir = self.original_data_dir / "images"
         self.output_dir = self.base_dir / "data"
-        self.images_archive_dir = self.base_dir / "assets"
-        self.images_archive_path = self.images_archive_dir / "images_archive.zip"
-        
-        # Vytvoření potřebných adresářů
+        self.images_output_dir = self.base_dir / "assets" / "images"
+        self.legacy_zip = self.base_dir / "assets" / "images_archive.zip"
+
         self.output_dir.mkdir(exist_ok=True)
-        self.images_archive_dir.mkdir(exist_ok=True)
-    
+        self.images_output_dir.mkdir(parents=True, exist_ok=True)
+
     def validate_input(self) -> bool:
-        """Ověří existenci vstupních souborů."""
+        """Verify required input files and folders exist."""
         input_file = self.original_data_dir / "questions_input.json"
-        images_dir = self.original_data_dir / "images"
-        
+
         if not input_file.exists():
-            print(f"❌ CHYBA: Soubor neexistuje: {input_file}")
-            print(f"   Prosím, vytvořte: original_data/questions_input.json")
+            print(f"CHYBA: Soubor neexistuje: {input_file}")
             return False
-        
-        if not images_dir.exists():
-            print(f"❌ CHYBA: Adresář neexistuje: {images_dir}")
-            print(f"   Prosím, vytvořte: original_data/images/")
+
+        if not self.source_images_dir.exists():
+            print(f"CHYBA: Adresar neexistuje: {self.source_images_dir}")
             return False
-        
+
         return True
-    
+
     def load_input_questions(self) -> List[Dict]:
-        """Načte otázky ze questions_input.json."""
+        """Load authoring questions from JSON."""
         input_file = self.original_data_dir / "questions_input.json"
-        
         try:
-            with open(input_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                return data.get("questions", [])
-        except json.JSONDecodeError as e:
-            print(f"❌ CHYBA: Neplatný JSON v {input_file}: {e}")
+            with open(input_file, "r", encoding="utf-8") as file:
+                payload = json.load(file)
+        except json.JSONDecodeError as exc:
+            print(f"CHYBA: Neplatny JSON: {exc}")
             return []
-    
+
+        return payload.get("questions", [])
+
     def generate_random_image_ids(self, count: int) -> List[str]:
-        """
-        Generuje seznam randomizovaných image_id.
-        
-        KLÍČOVÉ: IDs nejsou logicky navázané na otázky!
-        
-        Např.:
-        - q001 → img_087
-        - q002 → img_003
-        - q003 → img_156
-        
-        Tím se brání deducování: "otázka 1, obrázek 1, musí být první věc"
-        """
-        # Vygeneruj IDs v rozsahu 1-10000 (dost prostoru)
+        """Generate random unique image IDs."""
         image_ids = [f"img_{secrets.randbelow(10000):04d}" for _ in range(count)]
-        
-        # Zajisti uniqnost
         while len(set(image_ids)) != len(image_ids):
-            print("⚠️  Duplikátní image_ids, regeneruji...")
             image_ids = [f"img_{secrets.randbelow(10000):04d}" for _ in range(count)]
-        
         return image_ids
-    
+
     def prepare_questions(self) -> Tuple[List[Dict], Dict[str, str]]:
-        """
-        Transformuje vstupní otázky do bezpečného formátu.
-        
-        Returns:
-            Tuple[questions_list, image_mapping]
-            - questions_list: Seznamem otázek s hashy (bez plaintext)
-            - image_mapping: {"img_087": "original_steve_jobs.jpg", ...}
-        """
+        """Convert input questions into runtime-safe records and image mapping."""
         input_questions = self.load_input_questions()
-        
         if not input_questions:
-            print("❌ Žádné otázky nenalezeny!")
+            print("CHYBA: Zadane otazky nejsou k dispozici.")
             return [], {}
-        
-        print(f"📋 Načteno {len(input_questions)} otázek...")
-        
-        # Vytvoři randomizovaná image_ids
+
         image_ids = self.generate_random_image_ids(len(input_questions))
-        image_mapping = {}  # img_087 → original_steve_jobs.jpg
-        
-        prepared_questions = []
-        
-        for idx, question in enumerate(input_questions):
-            answer = question.get("answer", "")
-            image_file = question.get("image", "")
-            
-            if not answer or not image_file:
-                print(f"⚠️  Otázka {idx+1}: Chybí answer nebo image, přeskakuji...")
+        prepared_questions: List[Dict] = []
+        image_mapping: Dict[str, str] = {}
+
+        for index, question in enumerate(input_questions):
+            answer = question.get("answer", "").strip()
+            image_name = question.get("image", "").strip()
+
+            if not answer or not image_name:
+                print(f"WARN: Otazka {index + 1} nema answer/image, preskakuji")
                 continue
-            
-            # 1. Normalizace
+
             normalized_answer = self.security.normalize_text(answer)
-            
-            # 2. Salt
             salt = self.security.generate_salt(32)
-            
-            # 3. Hash
             answer_hash = self.security.hash_sha256(normalized_answer, salt)
-            
-            # 4. Image ID
-            image_id = image_ids[idx]
-            image_mapping[image_id] = image_file
-            
-            # 5. Příprava otázky bez plaintext
-            prepared = {
-                "id": f"q{idx+1:03d}",
-                "category": question.get("category", "general"),
-                "image_id": image_id,
-                "answer_hash": answer_hash,
-                "answer_salt": salt,
-                "answer_length": len(normalized_answer),
-                "difficulty": question.get("difficulty", "medium"),
-                "description": question.get("description", "")  # Pro admina (test soubor)
-            }
-            
-            prepared_questions.append(prepared)
-            print(f"✅ q{idx+1:03d}: {image_id} - {normalized_answer[:20]}...")
-        
+
+            image_id = image_ids[index]
+            image_mapping[image_id] = image_name
+
+            prepared_questions.append(
+                {
+                    "id": f"q{index + 1:03d}",
+                    "category": question.get("category", "general"),
+                    "image_id": image_id,
+                    "answer_hash": answer_hash,
+                    "answer_salt": salt,
+                    "answer_length": len(normalized_answer),
+                    "difficulty": question.get("difficulty", "medium"),
+                    "description": question.get("description", ""),
+                }
+            )
+
+            print(f"OK: q{index + 1:03d} -> {image_id}")
+
         return prepared_questions, image_mapping
-    
-    def create_images_archive(self, image_mapping: Dict[str, str]) -> bool:
-        """
-        Vytvoří ZIP archiv se všemi obrázky.
-        
-        Struktura:
-        images_archive.zip
-        ├── img_087.jpg (z original/images/original_steve_jobs.jpg)
-        ├── img_003.jpg (z original/images/original_google.jpg)
-        └── ...
-        
-        ZIP je UNCOMPRESSED (šifrování se přidá později, pokud bude potřeba)
-        """
-        images_dir = self.original_data_dir / "images"
-        
-        print("\n📦 Vytváření ZIP archívu s obrázky...")
-        
+
+    def _create_placeholder(self, target_path: Path, label: str) -> None:
+        """Create placeholder image when source is missing."""
+        image = Image.new("RGB", (960, 540), color="#1e293b")
+        draw = ImageDraw.Draw(image)
+
+        for row in range(4):
+            for col in range(4):
+                x1 = col * 240
+                y1 = row * 135
+                x2 = x1 + 240
+                y2 = y1 + 135
+                color = "#334155" if (row + col) % 2 == 0 else "#475569"
+                draw.rectangle((x1, y1, x2, y2), fill=color, outline="#64748b", width=2)
+
+        draw.text((30, 25), "Placeholder image", fill="#f8fafc")
+        draw.text((30, 60), f"Missing source: {label}", fill="#cbd5e1")
+        draw.text((30, 95), "Replace this file with real image", fill="#94a3b8")
+
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        image.save(target_path)
+
+    def _resolve_source_image(self, source_name: str) -> Path:
+        """Resolve source image path even if extension differs from input JSON."""
+        direct = self.source_images_dir / source_name
+        if direct.exists() and direct.suffix.lower() in self._SUPPORTED_SUFFIXES:
+            return direct
+
+        stem = Path(source_name).stem
+        for path in self.source_images_dir.glob(f"{stem}.*"):
+            if path.suffix.lower() in self._SUPPORTED_SUFFIXES:
+                return path
+
+        return direct
+
+    def build_images_directory(self, image_mapping: Dict[str, str]) -> bool:
+        """Create runtime assets/images content with anonymized names."""
+        print("\nPripravuji slozku assets/images...")
+
         try:
-            #删除starý archiv pokud existuje
-            if self.images_archive_path.exists():
-                self.images_archive_path.unlink()
-                print(f"🗑️  Smazán starý archiv: {self.images_archive_path}")
-            
-            with zipfile.ZipFile(self.images_archive_path, 'w', zipfile.ZIP_DEFLATED) as zf:
-                for image_id, original_filename in image_mapping.items():
-                    source_path = images_dir / original_filename
-                    
-                    if not source_path.exists():
-                        print(f"⚠️  Obrázek nenalezen: {source_path}, přeskakuji...")
-                        continue
-                    
-                    # Přidej do ZIP s anonymním názvem
-                    arcname = f"{image_id}{source_path.suffix}"  # img_087.jpg
-                    zf.write(source_path, arcname)
-                    print(f"  ✅ {original_filename} → {arcname}")
-            
-            print(f"✅ ZIP archiv vytvořen: {self.images_archive_path}")
+            self.images_output_dir.mkdir(parents=True, exist_ok=True)
+
+            for old_file in self.images_output_dir.iterdir():
+                if old_file.is_file() and old_file.suffix.lower() in self._SUPPORTED_SUFFIXES:
+                    old_file.unlink()
+
+            for image_id, source_name in image_mapping.items():
+                source = self._resolve_source_image(source_name)
+
+                if source.exists() and source.suffix.lower() in self._SUPPORTED_SUFFIXES:
+                    suffix = source.suffix.lower()
+                    target = self.images_output_dir / f"{image_id}{suffix}"
+                    shutil.copy2(source, target)
+                    print(f"  OK: {source_name} -> {target.name}")
+                    continue
+
+                target = self.images_output_dir / f"{image_id}.png"
+                self._create_placeholder(target, source_name)
+                print(f"  WARN: {source_name} chybi, vytvoren placeholder {target.name}")
+
+            if self.legacy_zip.exists():
+                self.legacy_zip.unlink()
+                print("  INFO: odstraneny stary assets/images_archive.zip")
+
             return True
-        
-        except Exception as e:
-            print(f"❌ CHYBA při vytváření ZIP: {e}")
+        except Exception as exc:
+            print(f"CHYBA pri priprave obrazku: {exc}")
             return False
-    
+
     def save_questions_json(self, questions: List[Dict]) -> bool:
-        """Uloží questions.json bez plaintext odpovědí."""
+        """Write prepared questions to data/questions.json."""
         output_file = self.output_dir / "questions.json"
-        
+
         try:
-            with open(output_file, 'w', encoding='utf-8') as f:
-                json.dump({
-                    "questions": questions,
-                    "prepared_at": datetime.now().isoformat(),
-                    "count": len(questions)
-                }, f, indent=2, ensure_ascii=False)
-            
-            print(f"✅ Otázky uloženy: {output_file}")
+            with open(output_file, "w", encoding="utf-8") as file:
+                json.dump(
+                    {
+                        "questions": questions,
+                        "prepared_at": datetime.now().isoformat(),
+                        "count": len(questions),
+                    },
+                    file,
+                    indent=2,
+                    ensure_ascii=False,
+                )
+
+            print(f"OK: ulozeno {output_file}")
             return True
-        except Exception as e:
-            print(f"❌ CHYBA při ukládání questions.json: {e}")
+        except Exception as exc:
+            print(f"CHYBA pri zapisu questions.json: {exc}")
             return False
-    
+
     def cleanup_originals(self) -> None:
-        """
-        BEZPEČNOSTNÍ KROK: Smažeme originální obrázky s názvy odpovědí.
-        
-        ⚠️ POZOR: Toto je DESTRUKTIVNÍ operace!
-        Před spuštěním si udělejte zálohu!
-        """
-        images_dir = self.original_data_dir / "images"
-        
+        """Optional cleanup of original source image files."""
         response = input(
-            "\n⚠️  POZOR: Chcete smazat originální obrázky z original_data/images/? "
-            "(Ty už jsou v ZIP archívu)\n"
-            "Zadejte 'ano' pro potvrzení: "
-        )
-        
-        if response.lower() == 'ano':
-            try:
-                if images_dir.exists():
-                    shutil.rmtree(images_dir)
-                    images_dir.mkdir()  # Vytvoř prázdný adresář
-                    print(f"🗑️  Všechny obrázky ze {images_dir} smazány.")
-                    print("   Ten adresář zůstane prázdný pro případ budoucích změn.")
-            except Exception as e:
-                print(f"⚠️  Chyba při mazání: {e}")
-        else:
-            print("❌ Mazání zrušeno - originální obrázky zůstávají.")
-            print(f"   Prosím, ručně smažte: {images_dir}")
-    
+            "\nSmazat original_data/images obsah? (zadejte 'ano' pro potvrzeni): "
+        ).strip().lower()
+
+        if response != "ano":
+            print("INFO: Originalni obrazky zustaly beze zmen.")
+            return
+
+        try:
+            if self.source_images_dir.exists():
+                shutil.rmtree(self.source_images_dir)
+            self.source_images_dir.mkdir(parents=True, exist_ok=True)
+            print("OK: Originalni obrazky byly smazany.")
+        except Exception as exc:
+            print(f"WARN: Mazani selhalo: {exc}")
+
     def run(self) -> bool:
-        """Spustí celý proces přípravy."""
-        print("=" * 70)
-        print("🔐 PŘÍPRAVA QUIZ DAT - BEZPEČNÁ TRANSFORMACE")
-        print("=" * 70)
-        
-        # 1. Validace
-        print("\n1️⃣  Validace vstupů...")
+        """Run full preparation workflow."""
+        print("=" * 68)
+        print("PRIPRAVA QUIZ DAT")
+        print("=" * 68)
+
+        print("\n1) Validace vstupu")
         if not self.validate_input():
             return False
-        print("✅ Vstupní soubory OK")
-        
-        # 2. Načtení a transformace
-        print("\n2️⃣  Transformace otázek...")
+        print("OK")
+
+        print("\n2) Hashovani a priprava otazek")
         questions, image_mapping = self.prepare_questions()
-        
         if not questions:
-            print("❌ Žádné otázky k proces")
             return False
-        
-        # 3. Vytvoření ZIP archívu
-        print("\n3️⃣  Vytvoření archívu s obrázky...")
-        if not self.create_images_archive(image_mapping):
+
+        print("\n3) Kopirovani obrazku do assets/images")
+        if not self.build_images_directory(image_mapping):
             return False
-        
-        # 4. Uložení questions.json
-        print("\n4️⃣  Uložení questions.json...")
+
+        print("\n4) Ulozeni data/questions.json")
         if not self.save_questions_json(questions):
             return False
-        
-        # 5. Cleanup
-        print("\n5️⃣  Čištění originálů...")
+
+        print("\n5) Volitelny cleanup original_data/images")
         self.cleanup_originals()
-        
-        # 6. Finální zpráva
-        print("\n" + "=" * 70)
-        print("✅ PŘÍPRAVA KOMPLETNÍ!")
-        print("=" * 70)
-        print(f"""
-Výstupy:
-  ✅ data/questions.json (otázky s hashy, bez plaintext)
-  ✅ assets/images_archive.zip (všechny obrázky, bez jmen)
-  ✅ Originální obrázky: smazány (pokud jste souhlasili)
 
-Bezpečnost:
-  ✅ Odpovědi: Jen jako SHA256 hashe
-  ✅ Image_id: Randomizované (q001 ≠ img_001)
-  ✅ Obrázky: V ZIP archívu, bez názvy souborů
-  ✅ Mapování: Jen v paměti aplikace za runtime
+        print("\n" + "=" * 68)
+        print("HOTOVO")
+        print("=" * 68)
+        print(
+            """
+Vystupy:
+  - data/questions.json
+  - assets/images/<image_id>.jpg|png|...
 
-Příští krok: Spusťte aplikaci quiz_app.py
-""")
+Bezpecnost:
+  - Odpovedi jsou ulozene pouze jako hash + salt
+  - Nazvy runtime obrazku jsou anonymni (img_XXXX)
+"""
+        )
         return True
 
 
-def main():
-    """Vstupní bod skriptu."""
+def main() -> None:
+    """CLI entry point."""
     preparer = QuestionPreparer()
-    success = preparer.run()
-    
-    exit(0 if success else 1)
+    ok = preparer.run()
+    raise SystemExit(0 if ok else 1)
 
 
 if __name__ == "__main__":

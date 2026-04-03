@@ -1,3 +1,4 @@
 Pillow>=9.0.0
 pytest>=7.0.0
 cryptography>=37.0.0
+tk>=0.0.1  # Tkinter with TCL/TK for GUI support

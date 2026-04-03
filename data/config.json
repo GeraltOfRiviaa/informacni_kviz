@@ -1,0 +1,63 @@
+{
+  "game": {
+    "title": "Informační Kvíz",
+    "version": "1.0",
+    "description": "Soutěžní aplikace pro týmy ze základních škol"
+  },
+  "rounds": {
+    "time_per_round_seconds": 600,
+    "initial_score": 200,
+    "max_teams": 4,
+    "min_teams": 2
+  },
+  "scoring": {
+    "cell_penalties": [
+      0,
+      -1,
+      -2,
+      -3,
+      -4,
+      -5,
+      -6,
+      -7,
+      -8,
+      -9,
+      -10,
+      -11,
+      -12,
+      -13,
+      -14,
+      -15
+    ],
+    "wrong_answer_penalty": -20,
+    "hint_penalty": -1,
+    "comment": "První políčko je zdarma (0 bodů), druhé stojí -1 bod, atd. Maximálně 16 políček."
+  },
+  "image_processing": {
+    "grid_size": 4,
+    "masking_strategy": "pixelate",
+    "pixel_block_size": 20,
+    "blur_radius": 15
+  },
+  "ui": {
+    "theme": "dark",
+    "font_size_default": 12,
+    "font_size_large": 18,
+    "fullscreen_default": false,
+    "window_width": 1600,
+    "window_height": 900
+  },
+  "logging": {
+    "enabled": true,
+    "level": "INFO",
+    "file": "data/logs/app.log",
+    "backup_results": true
+  },
+  "security": {
+    "hash_algorithm": "sha256",
+    "normalize_answers": true,
+    "case_insensitive": true,
+    "remove_diacritics": true,
+    "remove_spaces": true
+  }
+}

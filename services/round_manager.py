@@ -4,7 +4,14 @@ Coordinates between all services and models.
 """
 
 import logging
+import sys
+from pathlib import Path
 from typing import Optional, Tuple
+
+# Ensure root directory is in path for imports
+_root_dir = str(Path(__file__).parent.parent)
+if _root_dir not in sys.path:
+    sys.path.insert(0, _root_dir)
 
 from models import Question, GameState, Round, Grid, ScoreRecord
 from services.score_manager import ScoreManager

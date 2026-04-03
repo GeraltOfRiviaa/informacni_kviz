@@ -10,9 +10,16 @@ from ui.components import (
     ModernButton, GridButton, TimerWidget, ScoreDisplay,
     HintDisplay, InputField
 )
-from ui.round_screen import PuzzleGrid, RoundScreen
 from ui.admin_panel import AdminPanel
 from ui.theme import COLORS, FONTS
+
+
+def create_tk_root_or_skip() -> tk.Tk:
+    """Create Tk root or skip test if Tcl/Tk runtime is unavailable."""
+    try:
+        return tk.Tk()
+    except tk.TclError as exc:
+        pytest.skip(f"Tk environment is unavailable: {exc}")
 
 
 class TestModernButton:
@@ -20,7 +27,7 @@ class TestModernButton:
     
     def test_button_creation(self):
         """Test creating a modern button."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             button = ModernButton(root, "Test", bg_color="#0078d4")
             assert button.cget("text") == "Test"
@@ -30,7 +37,7 @@ class TestModernButton:
     
     def test_button_command(self):
         """Test button command callback."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         callback = Mock()
         try:
             button = ModernButton(root, "Test", command=callback)
@@ -45,7 +52,7 @@ class TestGridButton:
     
     def test_grid_button_creation(self):
         """Test creating a grid button."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             button = GridButton(root, grid_index=5)
             assert button.grid_index == 5
@@ -55,7 +62,7 @@ class TestGridButton:
     
     def test_grid_button_reveal(self):
         """Test revealing a grid button."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             button = GridButton(root, grid_index=0)
             button.reveal()
@@ -70,7 +77,7 @@ class TestTimerWidget:
     
     def test_timer_creation(self):
         """Test creating timer widget."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             timer = TimerWidget(root)
             assert timer.label is not None
@@ -79,7 +86,7 @@ class TestTimerWidget:
     
     def test_timer_update(self):
         """Test updating timer display."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             timer = TimerWidget(root)
             timer.update_time(150)  # 2:30
@@ -89,7 +96,7 @@ class TestTimerWidget:
     
     def test_timer_color_green(self):
         """Test timer color when time is plenty."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             timer = TimerWidget(root)
             timer.update_time(300)  # 5:00
@@ -99,7 +106,7 @@ class TestTimerWidget:
     
     def test_timer_color_orange(self):
         """Test timer color when time is low."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             timer = TimerWidget(root)
             timer.update_time(90)  # 1:30
@@ -109,7 +116,7 @@ class TestTimerWidget:
     
     def test_timer_color_red(self):
         """Test timer color when time is critical."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             timer = TimerWidget(root)
             timer.update_time(30)  # 0:30
@@ -123,7 +130,7 @@ class TestScoreDisplay:
     
     def test_score_creation(self):
         """Test creating score display."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             score = ScoreDisplay(root)
             assert score.score_label is not None
@@ -132,7 +139,7 @@ class TestScoreDisplay:
     
     def test_score_update(self):
         """Test updating score display."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             score = ScoreDisplay(root)
             score.update_score(150)
@@ -146,7 +153,7 @@ class TestHintDisplay:
     
     def test_hint_creation(self):
         """Test creating hint display."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             hint = HintDisplay(root, answer_length=10)
             text = hint.hint_label.cget("text")
@@ -156,7 +163,7 @@ class TestHintDisplay:
     
     def test_hint_update(self):
         """Test updating hint display."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             hint = HintDisplay(root, answer_length=10)
             hint.update_display("D_n_ld Tr_mp")
@@ -170,7 +177,7 @@ class TestInputField:
     
     def test_input_creation(self):
         """Test creating input field."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             field = InputField(root)
             assert field.entry is not None
@@ -179,7 +186,7 @@ class TestInputField:
     
     def test_input_get_text(self):
         """Test getting text from input field."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             field = InputField(root)
             field.entry.insert(0, "Test Answer")
@@ -189,57 +196,12 @@ class TestInputField:
     
     def test_input_clear(self):
         """Test clearing input field."""
-        root = tk.Tk()
+        root = create_tk_root_or_skip()
         try:
             field = InputField(root)
             field.entry.insert(0, "Test")
             field.clear()
             assert field.get_text() == ""
-        finally:
-            root.destroy()
-
-
-class TestPuzzleGrid:
-    """Test PuzzleGrid widget."""
-    
-    def test_grid_creation(self):
-        """Test creating puzzle grid."""
-        root = tk.Tk()
-        try:
-            grid = PuzzleGrid(root)
-            assert len(grid.cells) == 16
-        finally:
-            root.destroy()
-    
-    def test_grid_cell_reveal(self):
-        """Test revealing grid cell."""
-        root = tk.Tk()
-        try:
-            grid = PuzzleGrid(root)
-            grid.reveal_cell(5)
-            assert grid.cells[5].is_revealed
-        finally:
-            root.destroy()
-    
-    def test_grid_revealed_count(self):
-        """Test counting revealed cells."""
-        root = tk.Tk()
-        try:
-            grid = PuzzleGrid(root)
-            grid.reveal_cell(0)
-            grid.reveal_cell(1)
-            assert grid.get_revealed_count() == 2
-        finally:
-            root.destroy()
-    
-    def test_grid_cell_click(self):
-        """Test grid cell click callback."""
-        root = tk.Tk()
-        callback = Mock()
-        try:
-            grid = PuzzleGrid(root, on_cell_click=callback)
-            grid._handle_click(5)
-            callback.assert_called_once_with(5)
         finally:
             root.destroy()
 

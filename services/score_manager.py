@@ -4,7 +4,15 @@ Responsible for calculating penalties and final scores.
 """
 
 import logging
+import sys
+from pathlib import Path
 from typing import List
+
+# Ensure root directory is in path for imports
+_root_dir = str(Path(__file__).parent.parent)
+if _root_dir not in sys.path:
+    sys.path.insert(0, _root_dir)
+
 from config import ScoringConfig
 
 

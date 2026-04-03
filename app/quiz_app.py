@@ -4,11 +4,17 @@ Coordinates between UI, Services, and Models layers.
 """
 
 import logging
+import sys
+from pathlib import Path
 from typing import List, Optional
-from datetime import datetime
+
+# Ensure root directory is in path for imports
+_root_dir = str(Path(__file__).parent.parent)
+if _root_dir not in sys.path:
+    sys.path.insert(0, _root_dir)
 
 from config import AppConfig, CONFIG
-from models import Question, Team, GameState, Round, Grid, ScoreRecord
+from models import Question, Team, GameState, Round
 from services.round_manager import RoundManager
 from utils import setup_logging
 
@@ -26,7 +32,7 @@ class QuizApp:
     - Handle transitions between game states
     """
     
-    def __init__(self, config: AppConfig = None):
+    def __init__(self, config: Optional[AppConfig] = None):
         """
         Initialize the QuizApp.
         
@@ -168,8 +174,9 @@ class QuizApp:
     
     def __repr__(self) -> str:
         """Developer-friendly representation."""
+        current_team = self.get_current_team()
         return (
             f"QuizApp(teams={[t.name for t in self.teams]}, "
-            f"current_team={self.get_current_team().name if self.get_current_team() else None}, "
+            f"current_team={current_team.name if current_team else None}, "
             f"round={self.current_round_number})"
         )

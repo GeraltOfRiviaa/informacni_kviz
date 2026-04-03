@@ -1,16 +1,21 @@
-"""
-AdminPanel - Question selection and game management screen.
-Allows operator to select questions without revealing answers.
-"""
+"""Panel správce pro výběr otázek a spuštění kola bez odhalení odpovědí."""
 
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, filedialog
 from typing import Callable, Optional
 import logging
+import sys
+from pathlib import Path
+
+# Ensure root directory is in path for imports
+_root_dir = str(Path(__file__).parent.parent)
+if _root_dir not in sys.path:
+    sys.path.insert(0, _root_dir)
 
 from ui.components import ModernButton
 from ui.theme import COLORS, FONTS
 from services.question_loader import QuestionLoader
+from services.image_upload_service import ImageUploadService
 from models.question import Question
 from config import CONFIG
 
@@ -19,43 +24,31 @@ logger = logging.getLogger(__name__)
 
 
 class AdminPanel(tk.Frame):
-    """
-    Admin panel for selecting and starting rounds.
+    """Admin panel pro výběr otázky a spuštění kola."""
     
-    Features:
-    - Question list with filtering
-    - Category and difficulty filters
-    - Preview (without revealing answer)
-    - Start round button
-    """
-    
-    def __init__(self, parent, on_start_round: Callable = None, **kwargs):
-        """
-        Initialize AdminPanel.
-        
-        Args:
-            parent: Parent widget
-            on_start_round: Callback when round starts (receives Question)
-        """
+    def __init__(self, parent, on_start_round: Callable = None, on_back: Callable = None, **kwargs):
+        """Inicializuje admin panel."""
         super().__init__(parent, bg=COLORS["bg_primary"], **kwargs)
         
         self.on_start_round = on_start_round
+        self.on_back = on_back
         self.loader = QuestionLoader(CONFIG.questions_json)
         self.all_questions = self.loader.load_all()
         self.selected_question: Optional[Question] = None
+        self.image_upload_service = ImageUploadService()
         
         self._build_ui()
         logger.info(f"AdminPanel initialized with {len(self.all_questions)} questions")
     
     def _build_ui(self) -> None:
-        """Build UI layout."""
+        """Vytvoří rozložení panelu."""
         # Top: Title
         title_frame = tk.Frame(self, bg=COLORS["bg_secondary"], height=60)
         title_frame.pack(fill=tk.X, padx=20, pady=20)
         
         tk.Label(
             title_frame,
-            text="Question Selection",
+            text="Výběr otázky",
             font=FONTS["title"],
             bg=COLORS["bg_secondary"],
             fg=COLORS["fg_primary"]
@@ -75,21 +68,21 @@ class AdminPanel(tk.Frame):
         self._build_bottom(self)
     
     def _build_filters(self, parent) -> None:
-        """Build filter controls."""
+        """Vytvoří ovládací prvky filtrů."""
         filter_frame = tk.Frame(parent, bg=COLORS["bg_secondary"])
         filter_frame.pack(fill=tk.X, pady=10)
-        
+
         # Category filter
         tk.Label(
             filter_frame,
-            text="Category:",
-            font=FONTS["small"],
+            text="Kategorie:",
+            font=FONTS["body"],
             bg=COLORS["bg_secondary"],
-            fg=COLORS["fg_primary"]
+            fg=COLORS["accent"]  # Use accent color for better visibility
         ).pack(side=tk.LEFT, padx=5)
-        
-        categories = ["All"] + list(set(q.category for q in self.all_questions))
-        self.category_var = tk.StringVar(value="All")
+
+        categories = ["Vše"] + list(set(q.category for q in self.all_questions))
+        self.category_var = tk.StringVar(value="Vše")
         self.category_combo = ttk.Combobox(
             filter_frame,
             textvariable=self.category_var,
@@ -99,18 +92,18 @@ class AdminPanel(tk.Frame):
         )
         self.category_combo.pack(side=tk.LEFT, padx=5)
         self.category_combo.bind("<<ComboboxSelected>>", lambda e: self._refresh_list())
-        
+
         # Difficulty filter
         tk.Label(
             filter_frame,
-            text="Difficulty:",
-            font=FONTS["small"],
+            text="Obtížnost:",
+            font=FONTS["body"],
             bg=COLORS["bg_secondary"],
-            fg=COLORS["fg_primary"]
+            fg=COLORS["accent"]  # Use accent color for better visibility
         ).pack(side=tk.LEFT, padx=5)
-        
-        difficulties = ["All"] + list(set(q.difficulty for q in self.all_questions))
-        self.difficulty_var = tk.StringVar(value="All")
+
+        difficulties = ["Vše"] + list(set(q.difficulty for q in self.all_questions))
+        self.difficulty_var = tk.StringVar(value="Vše")
         self.difficulty_combo = ttk.Combobox(
             filter_frame,
             textvariable=self.difficulty_var,
@@ -122,13 +115,13 @@ class AdminPanel(tk.Frame):
         self.difficulty_combo.bind("<<ComboboxSelected>>", lambda e: self._refresh_list())
     
     def _build_question_list(self, parent) -> None:
-        """Build question list panel."""
+        """Vytvoří seznam otázek."""
         list_frame = tk.Frame(parent, bg=COLORS["bg_secondary"])
         list_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10)
         
         tk.Label(
             list_frame,
-            text="Questions",
+            text="Otázky",
             font=FONTS["heading"],
             bg=COLORS["bg_secondary"],
             fg=COLORS["fg_primary"]
@@ -156,13 +149,13 @@ class AdminPanel(tk.Frame):
         self._refresh_list()
     
     def _build_preview(self, parent) -> None:
-        """Build question preview panel."""
+        """Vytvoří panel náhledu vybrané otázky."""
         preview_frame = tk.Frame(parent, bg=COLORS["bg_secondary"])
         preview_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False, padx=10)
         
         tk.Label(
             preview_frame,
-            text="Preview",
+            text="Náhled",
             font=FONTS["heading"],
             bg=COLORS["bg_secondary"],
             fg=COLORS["fg_primary"]
@@ -193,7 +186,7 @@ class AdminPanel(tk.Frame):
         # Category
         tk.Label(
             info_frame,
-            text="Category:",
+            text="Kategorie:",
             font=FONTS["body"],
             bg=COLORS["bg_tertiary"],
             fg=COLORS["fg_secondary"]
@@ -211,7 +204,7 @@ class AdminPanel(tk.Frame):
         # Difficulty
         tk.Label(
             info_frame,
-            text="Difficulty:",
+            text="Obtížnost:",
             font=FONTS["body"],
             bg=COLORS["bg_tertiary"],
             fg=COLORS["fg_secondary"]
@@ -229,7 +222,7 @@ class AdminPanel(tk.Frame):
         # Answer length
         tk.Label(
             info_frame,
-            text="Answer Length:",
+            text="Délka odpovědi:",
             font=FONTS["body"],
             bg=COLORS["bg_tertiary"],
             fg=COLORS["fg_secondary"]
@@ -247,22 +240,40 @@ class AdminPanel(tk.Frame):
         # Note
         tk.Label(
             preview_frame,
-            text="⚠ Answer is never shown\nfor security reasons",
+            text="⚠ Odpověď se z bezpečnostních důvodů\nnikdy nezobrazí",
             font=FONTS["small"],
             bg=COLORS["bg_secondary"],
             fg=COLORS["warning"],
             justify=tk.CENTER
         ).pack(pady=10)
-    
-    def _build_bottom(self, parent) -> None:
-        """Build bottom action buttons."""
-        button_frame = tk.Frame(parent, bg=COLORS["bg_primary"])
-        button_frame.pack(fill=tk.X, padx=20, pady=20)
+        
+        # Upload image button
+        tk.Label(
+            preview_frame,
+            text="Obrázek:",
+            font=FONTS["body"],
+            bg=COLORS["bg_secondary"],
+            fg=COLORS["fg_primary"]
+        ).pack(pady=(20, 5))
         
         ModernButton(
+            preview_frame,
+            "📤 Nahrát obrázek",
+            command=self._handle_upload_image,
+            bg_color=COLORS["accent"],
+            width=25,
+            height=1
+        ).pack(padx=10, pady=5)
+    
+    def _build_bottom(self, parent) -> None:
+        """Vytvoří spodní akční tlačítka."""
+        button_frame = tk.Frame(parent, bg=COLORS["bg_primary"])
+        button_frame.pack(fill=tk.X, padx=20, pady=20)
+
+        ModernButton(
             button_frame,
-            "Start Round",
-            command=self._handle_start,
+            "Spustit kolo",
+            command=self._handle_start_round,
             bg_color=COLORS["success"],
             width=20,
             height=2
@@ -270,25 +281,46 @@ class AdminPanel(tk.Frame):
         
         ModernButton(
             button_frame,
-            "Quit",
+            "Zpět na hlavní menu",
+            command=self._handle_back,
+            bg_color=COLORS["accent"],
+            width=20,
+            height=2
+        ).pack(side=tk.LEFT, padx=10)
+        
+        ModernButton(
+            button_frame,
+            "Konec",
             command=self._handle_quit,
             bg_color=COLORS["danger"],
             width=20,
             height=2
         ).pack(side=tk.LEFT, padx=10)
+
+    def _handle_start_round(self) -> None:
+        """Spustí kolo s vybranou otázkou."""
+        if not self.selected_question:
+            messagebox.showwarning("Chyba", "Prosím vyberte nejdříve otázku")
+            return
+
+        if self.on_start_round:
+            logger.info(f"Starting round from admin panel: {self.selected_question.id}")
+            self.on_start_round(self.selected_question)
+        else:
+            logger.warning("Callback on_start_round není nastaven")
     
     def _refresh_list(self) -> None:
-        """Refresh question list based on filters."""
+        """Obnoví seznam otázek podle filtrů."""
         category = self.category_var.get()
         difficulty = self.difficulty_var.get()
         
         # Filter questions
         filtered = self.all_questions
         
-        if category != "All":
+        if category != "Vše":
             filtered = [q for q in filtered if q.category == category]
         
-        if difficulty != "All":
+        if difficulty != "Vše":
             filtered = [q for q in filtered if q.difficulty == difficulty]
         
         # Update listbox
@@ -302,7 +334,7 @@ class AdminPanel(tk.Frame):
         logger.info(f"Filtered to {len(filtered)} questions")
     
     def _on_question_select(self, event) -> None:
-        """Handle question selection."""
+        """Zpracuje výběr otázky v seznamu."""
         selection = self.question_listbox.curselection()
         if not selection:
             return
@@ -325,22 +357,63 @@ class AdminPanel(tk.Frame):
             
             logger.info(f"Question selected: {question_id}")
     
-    def _handle_start(self) -> None:
-        """Start round with selected question."""
+    def _handle_upload_image(self) -> None:
+        """Nahraje obrázek pro vybranou otázku."""
         if not self.selected_question:
-            messagebox.showwarning("No Selection", "Please select a question first")
+            messagebox.showwarning("Chyba", "Prosím vyberte nejdříve otázku")
             return
         
-        logger.info(f"Starting round with question {self.selected_question.id}")
+        # Open file dialog
+        file_path = filedialog.askopenfilename(
+            title="Vyberte obrázek pro otázku",
+            filetypes=[
+                ("Obrázky", "*.jpg *.jpeg *.png *.gif *.webp"),
+                ("JPEG", "*.jpg *.jpeg"),
+                ("PNG", "*.png"),
+                ("GIF", "*.gif"),
+                ("WebP", "*.webp"),
+                ("Všechny soubory", "*.*")
+            ]
+        )
         
-        if self.on_start_round:
-            self.on_start_round(self.selected_question)
+        if not file_path:
+            return
+        
+        try:
+            # Upload image
+            result = self.image_upload_service.upload_image(
+                file_path=file_path,
+                reference_name=self.selected_question.id
+            )
+            
+            if result.get("success"):
+                image_id = result.get("image_id")
+                messagebox.showinfo(
+                    "Úspěch",
+                    f"Obrázek byl úspěšně nahrán.\nID: {image_id}"
+                )
+                logger.info(f"Image uploaded for question {self.selected_question.id}: {image_id}")
+            else:
+                error_msg = result.get("error", "Neznámá chyba")
+                messagebox.showerror("Chyba", f"Nahrávání se nezdařilo: {error_msg}")
+                logger.error(f"Nahrání obrázku selhalo: {error_msg}")
+        
+        except Exception as e:
+            messagebox.showerror("Chyba", f"Chyba při nahrávání: {str(e)}")
+            logger.error(f"Image upload exception: {e}")
+    
+    def _handle_back(self) -> None:
+        """Vrátí uživatele na hlavní menu."""
+        logger.info("Návrat na hlavní menu")
+        
+        if self.on_back:
+            self.on_back()
     
     def _handle_quit(self) -> None:
-        """Quit admin panel."""
-        if messagebox.askyesno("Quit", "Exit application?"):
+        """Ukončí aplikaci z admin panelu."""
+        if messagebox.askyesno("Konec", "Chcete opustit aplikaci?"):
             self.master.quit()
 
 
 if __name__ == "__main__":
-    print("AdminPanel component - see main.py for usage")
+    print("Komponenta AdminPanel - použití viz main.py")

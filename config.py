@@ -105,8 +105,8 @@ class AppConfig:
     config_json: str = "data/config.json"
     """Path to config JSON file."""
     
-    images_archive: str = "assets/images_archive.zip"
-    """Path to images ZIP archive."""
+    images_dir: str = "assets/images"
+    """Path to directory containing image files."""
     
     # Debug/Admin
     debug_mode: bool = False
@@ -120,6 +120,11 @@ class AppConfig:
             self.game = GameConfig()
         if self.hints is None:
             self.hints = HintConfig()
+
+    @property
+    def images_archive(self) -> str:
+        """Backward-compatible alias for older code paths."""
+        return self.images_dir
     
     @staticmethod
     def get_default() -> "AppConfig":
