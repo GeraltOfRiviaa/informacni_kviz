@@ -12,6 +12,7 @@ Requirements:
 
 import os
 import sys
+import argparse
 import shutil
 import subprocess
 from pathlib import Path
@@ -20,20 +21,31 @@ from pathlib import Path
 class PyInstallerBuilder:
     """Handles PyInstaller build process for Informační Kvíz."""
     
-    def __init__(self):
+    def __init__(self, onefile: bool = False, clean: bool = True):
         self.root_dir = Path(__file__).parent
         self.dist_dir = self.root_dir / "dist"
         self.build_dir = self.root_dir / "build"
         self.spec_dir = self.root_dir
         self.main_file = self.root_dir / "main.py"
+        self.onefile = onefile
+        self.clean = clean
         
     def clean_previous_builds(self):
         """Remove previous builds."""
+        if not self.clean:
+            print("[1/5] Cleaning previous builds... skipped")
+            return
+
         print("[1/5] Cleaning previous builds...")
         for directory in [self.dist_dir, self.build_dir]:
             if directory.exists():
                 shutil.rmtree(directory)
                 print(f"  ✓ Removed {directory.name}/")
+
+        spec_file = self.root_dir / "informacni_kviz.spec"
+        if spec_file.exists():
+            spec_file.unlink()
+            print("  ✓ Removed informacni_kviz.spec")
     
     def check_dependencies(self):
         """Check if PyInstaller is installed."""
@@ -77,12 +89,15 @@ class PyInstallerBuilder:
             sys.executable,
             "-m",
             "PyInstaller",
-            "--onedir",  # One directory instead of single file (faster, better UX)
+            "--onefile" if self.onefile else "--onedir",
             "--windowed",  # No console window
             "--name=informacni_kviz",
             "--icon=assets/icon.ico" if (self.root_dir / "assets" / "icon.ico").exists() else "",
-            "--add-data=" + ";".join([f"{src}{os.pathsep}{dst}" for src, dst in datas]),
         ]
+
+        # Add data mappings (one --add-data per mapping)
+        for src, dst in datas:
+            cmd.append(f"--add-data={src}{os.pathsep}{dst}")
         
         # Add hidden imports
         for imp in hidden_imports:
@@ -115,11 +130,25 @@ class PyInstallerBuilder:
     def create_distribution_package(self):
         """Create distribution package."""
         print("[5/5] Creating distribution package...")
-        
-        dist_app = self.dist_dir / "informacni_kviz"
-        if not dist_app.exists():
-            print("  ✗ Build directory not found!")
-            return False
+
+        if self.onefile:
+            exe_path = self.dist_dir / "informacni_kviz.exe"
+            if not exe_path.exists():
+                print("  ✗ Build executable not found!")
+                return False
+
+            dist_app = self.dist_dir / "informacni_kviz"
+            if dist_app.exists():
+                shutil.rmtree(dist_app)
+            dist_app.mkdir(parents=True, exist_ok=True)
+
+            shutil.copy2(exe_path, dist_app / "informacni_kviz.exe")
+            print("  ✓ Copied informacni_kviz.exe")
+        else:
+            dist_app = self.dist_dir / "informacni_kviz"
+            if not dist_app.exists():
+                print("  ✗ Build directory not found!")
+                return False
         
         # Copy README to dist
         readme_src = self.root_dir / "README.md"
@@ -164,9 +193,12 @@ class PyInstallerBuilder:
         print("\n" + "="*60)
         print("BUILD COMPLETED SUCCESSFULLY!")
         print("="*60)
-        
+
         exe_path = self.dist_dir / "informacni_kviz" / "informacni_kviz.exe"
         zip_path = self.dist_dir / "informacni_kviz_v1.0.zip"
+
+        build_mode = "onefile" if self.onefile else "onedir"
+        print(f"\nBuild mode: {build_mode}")
         
         if exe_path.exists():
             size_mb = exe_path.stat().st_size / (1024 * 1024)
@@ -209,8 +241,21 @@ class PyInstallerBuilder:
 
 def main():
     """Main entry point."""
+    parser = argparse.ArgumentParser(description="Build standalone executable for Informační Kvíz")
+    parser.add_argument(
+        "--onefile",
+        action="store_true",
+        help="Build single-file executable and package it into dist/informacni_kviz/",
+    )
+    parser.add_argument(
+        "--no-clean",
+        action="store_true",
+        help="Do not delete previous build/dist artifacts before build",
+    )
+    args = parser.parse_args()
+
     try:
-        builder = PyInstallerBuilder()
+        builder = PyInstallerBuilder(onefile=args.onefile, clean=not args.no_clean)
         builder.build()
         return 0
     except KeyboardInterrupt:

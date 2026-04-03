@@ -180,3 +180,22 @@ class QuizApp:
             f"current_team={current_team.name if current_team else None}, "
             f"round={self.current_round_number})"
         )
+
+
+def run_prepare_questions_pipeline() -> bool:
+    """Run non-interactive question preparation pipeline for admin usage."""
+    from prepare_questions import QuestionPreparer
+
+    print("Spoustim pripravu otazek (hashovani + export dat)...")
+    preparer = QuestionPreparer()
+    return preparer.run(
+        cleanup_images=False,
+        clear_input_after_prepare=True,
+        interactive=False,
+        merge_with_existing=True,
+    )
+
+
+if __name__ == "__main__":
+    success = run_prepare_questions_pipeline()
+    raise SystemExit(0 if success else 1)

@@ -41,7 +41,7 @@ Povinné je `answer` a `image`.
 python prepare_questions.py
 ```
 
-4. Zkontroluj výstup:
+1. Zkontroluj výstup:
 
 - `data/questions.json`
 - soubory v `assets/images/` s názvy `img_XXXX.ext`

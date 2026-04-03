@@ -12,7 +12,7 @@ Desktopová aplikace pro školní soutěžní kolo, kde tým odhaluje obrázek p
 - Tkinter GUI
 - Pillow (PIL) pro obrázky
 - JSON datové soubory
-- `pytest` pro testy
+- PyInstaller pro distribuci
 
 ## 3. Vrstvy aplikace
 
@@ -61,7 +61,7 @@ Desktopová aplikace pro školní soutěžní kolo, kde tým odhaluje obrázek p
 
 - `main.py`: vstupní bod aplikace
 - `prepare_questions.py`: příprava dat pro hru
-- `run_tests.py`: spouštění testů
+- `build_exe.py`: build distribuce (`onedir`/`onefile`)
 - `ADMIN_GUIDE.md`: návod pro přípravu otázek
 - `PRE_DEPLOYMENT_CHECKLIST.md`: kontrolní seznam před nasazením
 

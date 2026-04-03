@@ -26,12 +26,12 @@ Projekt je ve stavu funkční aplikace s aktivním administračním modulem, her
 ## Známé limity
 
 - repozitář může být bez reálných produkčních obrázků
-- část GUI testů může být závislá na dostupnosti Tk prostředí
+- build na jiném stroji může vyžadovat znovuinstalaci závislostí
 
 ## Doporučení před soutěží
 
 1. Naplnit `original_data/images/` reálnými obrázky.
 2. Spustit `python prepare_questions.py`.
-3. Spustit testy a smoke test GUI.
+3. Spustit `python main.py` a ověřit základní flow.
 4. Změnit výchozí heslo správce.
-5. Projít `PRE_DEPLOYMENT_CHECKLIST.md`.
+5. Vytvořit distribuci přes `py build_exe.py` a projít `PRE_DEPLOYMENT_CHECKLIST.md`.

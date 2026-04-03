@@ -89,6 +89,8 @@ class RoundScreen(tk.Frame):
         self.image_label: Optional[tk.Label] = None
         self.image_stage: Optional[tk.Frame] = None
         self._image_preview_ref = None
+        self.wrong_overlay_label: Optional[tk.Label] = None
+        self._wrong_overlay_after_id: Optional[str] = None
 
         self.team_total_score_start = team_total_score
         self.current_score = self.round_manager.config.scoring.base_points
@@ -259,7 +261,39 @@ class RoundScreen(tk.Frame):
         )
         self.image_label.place(x=0, y=0, relwidth=1, relheight=1)
 
+        self.wrong_overlay_label = tk.Label(
+            self.image_stage,
+            text="Špatná odpověď",
+            font=FONTS["title"],
+            bg="#7f1d1d",
+            fg="#ffffff",
+            padx=24,
+            pady=12,
+            relief=tk.SOLID,
+            bd=2,
+        )
+        self.wrong_overlay_label.place_forget()
+
         self._update_image_preview()
+
+    def _show_wrong_answer_overlay(self) -> None:
+        """Show centered wrong-answer overlay over image for 5 seconds."""
+        if not self.wrong_overlay_label:
+            return
+
+        if self._wrong_overlay_after_id:
+            self.after_cancel(self._wrong_overlay_after_id)
+            self._wrong_overlay_after_id = None
+
+        self.wrong_overlay_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        self.wrong_overlay_label.lift()
+        self._wrong_overlay_after_id = self.after(5000, self._hide_wrong_answer_overlay)
+
+    def _hide_wrong_answer_overlay(self) -> None:
+        """Hide wrong-answer overlay label."""
+        if self.wrong_overlay_label:
+            self.wrong_overlay_label.place_forget()
+        self._wrong_overlay_after_id = None
 
     def _update_image_preview(self):
         """Render image preview and keep overlay grid in sync."""
@@ -452,13 +486,13 @@ class RoundScreen(tk.Frame):
             self.current_score -= wrong_penalty
             self.current_score = max(0, self.current_score)
             self._refresh_score_labels()
-            self.wrong_label.config(text=f"Špatná odpověď: -{wrong_penalty} bodů")
+            self.wrong_label.config(text=f"Ztráta bodů: -{wrong_penalty}")
+            self._show_wrong_answer_overlay()
 
             self.entry.delete(0, tk.END)
             self.entry.insert(0, "Zadej odpověď")
             self.entry.config(fg="#999999")
             self._update_input_visualization()
-            messagebox.showwarning("Špatně", "Zkuste to znovu...")
             self.entry.focus()
 
     def update_timer(self, remaining_seconds: int):

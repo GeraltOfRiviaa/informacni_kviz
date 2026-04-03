@@ -1,32 +1,3 @@
 {
-  "questions": [
-    {
-      "answer": "Microsoft",
-      "image": "img_005.jpg",
-      "category": "logo",
-      "difficulty": "easy",
-      "description": "American technology multinational corporation - Windows and Office"
-    },
-    {
-      "answer": "Oracle",
-      "image": "img_009.jpg",
-      "category": "logo",
-      "difficulty": "easy",
-      "description": "Database software company - red logo"
-    },
-    {
-      "answer": "Java",
-      "image": "img_001.jpg",
-      "category": "programming_language",
-      "difficulty": "easy",
-      "description": "Popular programming language - coffee cup logo"
-    },
-    {
-      "answer": "Bluetooth",
-      "image": "img_006.jpg",
-      "category": "technology_concept",
-      "difficulty": "easy",
-      "description": "Wireless communication standard - named after Viking king"
-    }
-  ]
+  "questions": []
 }

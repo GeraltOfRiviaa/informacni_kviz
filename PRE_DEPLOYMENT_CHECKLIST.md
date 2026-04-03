@@ -4,9 +4,8 @@ Kontrolní seznam pro přípravu aplikace před reálnou soutěží.
 
 ## 1. Testy a start aplikace
 
-- [ ] `pytest tests -q`
-- [ ] `python test_gui_init.py`
 - [ ] `python main.py` startuje bez běhové chyby
+- [ ] je možné otevřít admin režim i herní režim
 
 ## 2. Data a obrázky
 
@@ -41,6 +40,6 @@ Kontrolní seznam pro přípravu aplikace před reálnou soutěží.
 
 ```bash
 python prepare_questions.py
-pytest tests/test_image_handler.py tests/test_round_manager.py tests/test_admin_question_manager.py -q
 python main.py
+py build_exe.py
 ```

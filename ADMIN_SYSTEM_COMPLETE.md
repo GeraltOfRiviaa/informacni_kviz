@@ -8,7 +8,7 @@ Admin část je implementovaná a integrovaná do hlavní aplikace. Podporuje:
 - CRUD operace nad otázkami
 - upload obrázků do `assets/images/`
 - filtraci a vyhledávání
-- spuštění kola z administračního panelu
+- správu dat pro následné spuštění herního režimu
 
 ## Hlavní komponenty
 
@@ -35,5 +35,6 @@ Admin část je implementovaná a integrovaná do hlavní aplikace. Podporuje:
 ## Doporučené ověření
 
 ```bash
-pytest tests/test_admin_auth.py tests/test_admin_question_manager.py tests/test_image_upload_service.py -q
+python main.py
+py build_exe.py
 ```
