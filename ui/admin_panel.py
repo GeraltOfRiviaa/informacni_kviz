@@ -271,24 +271,6 @@ class AdminPanel(tk.Frame):
             fg=COLORS["warning"],
             justify=tk.CENTER
         ).pack(pady=10)
-        
-        # Upload image button
-        tk.Label(
-            preview_frame,
-            text="Obrázek:",
-            font=FONTS["body"],
-            bg=COLORS["bg_secondary"],
-            fg=COLORS["fg_primary"]
-        ).pack(pady=(20, 5))
-        
-        ModernButton(
-            preview_frame,
-            "📤 Nahrát obrázek",
-            command=self._handle_upload_image,
-            bg_color=COLORS["accent"],
-            width=25,
-            height=1
-        ).pack(padx=10, pady=5)
     
     def _build_bottom(self, parent) -> None:
         """Vytvoří spodní akční tlačítka."""
@@ -586,51 +568,6 @@ class AdminPanel(tk.Frame):
         self.question_tree.focus(question_id)
         self._on_question_select(None)
     
-    def _handle_upload_image(self) -> None:
-        """Nahraje obrázek pro vybranou otázku."""
-        if not self.selected_question:
-            messagebox.showwarning("Chyba", "Prosím vyberte nejdříve otázku")
-            return
-        
-        # Open file dialog
-        file_path = filedialog.askopenfilename(
-            title="Vyberte obrázek pro otázku",
-            filetypes=[
-                ("Obrázky", "*.jpg *.jpeg *.png *.gif *.webp"),
-                ("JPEG", "*.jpg *.jpeg"),
-                ("PNG", "*.png"),
-                ("GIF", "*.gif"),
-                ("WebP", "*.webp"),
-                ("Všechny soubory", "*.*")
-            ]
-        )
-        
-        if not file_path:
-            return
-        
-        try:
-            # Upload image
-            result = self.image_upload_service.upload_image(
-                file_path=file_path,
-                reference_name=self.selected_question.id
-            )
-            
-            if result.get("success"):
-                image_id = result.get("image_id")
-                messagebox.showinfo(
-                    "Úspěch",
-                    f"Obrázek byl úspěšně nahrán.\nID: {image_id}"
-                )
-                logger.info(f"Image uploaded for question {self.selected_question.id}: {image_id}")
-            else:
-                error_msg = result.get("error", "Neznámá chyba")
-                messagebox.showerror("Chyba", f"Nahrávání se nezdařilo: {error_msg}")
-                logger.error(f"Nahrání obrázku selhalo: {error_msg}")
-        
-        except Exception as e:
-            messagebox.showerror("Chyba", f"Chyba při nahrávání: {str(e)}")
-            logger.error(f"Image upload exception: {e}")
-
     def _handle_create_question(self) -> None:
         """Otevře formulář pro přidání nové otázky do data/questions.json."""
         dialog = tk.Toplevel(self)
@@ -1100,14 +1037,16 @@ class AdminPanel(tk.Frame):
 
         if resolved_path is None:
             raise FileNotFoundError(
-                "Obrázek nebyl nalezen. Použijte platnou cestu v original_data/images."
+                "Neplatná cesta k obrázku. Zkontrolujte, že soubor existuje a je v originální složce obrázků. "
+                "Správný formát cesty je například: ./original_data/images/img_001.png"
             )
 
         try:
             resolved_path.relative_to(target_dir)
         except ValueError as exc:
             raise ValueError(
-                "Neplatná cesta. Obrázek musí být umístěný v original_data/images."
+                "Neplatná cesta k obrázku. Obrázek musí být umístěný ve složce original_data/images. "
+                "Správný formát cesty je například: ./original_data/images/img_001.png"
             ) from exc
 
         suffix = resolved_path.suffix.lower()

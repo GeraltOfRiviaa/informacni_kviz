@@ -1,0 +1,74 @@
+{
+  "img_d6b65503d3d6bba5": {
+    "image_id": "img_d6b65503d3d6bba5",
+    "filename": "img_d6b65503d3d6bba5.png",
+    "format": "png",
+    "size_bytes": 4942,
+    "width": 800,
+    "height": 600,
+    "reference_name": "img_005.png",
+    "description": "",
+    "uploaded_at": "2026-04-06T18:58:39.880469",
+    "original_filename": "img_005.png"
+  },
+  "img_cd6b72500d847a5b": {
+    "image_id": "img_cd6b72500d847a5b",
+    "filename": "img_cd6b72500d847a5b.png",
+    "format": "png",
+    "size_bytes": 14269,
+    "width": 800,
+    "height": 600,
+    "reference_name": "img_009.png",
+    "description": "",
+    "uploaded_at": "2026-04-06T18:59:25.182345",
+    "original_filename": "img_009.png"
+  },
+  "img_275d2e0a04947664": {
+    "image_id": "img_275d2e0a04947664",
+    "filename": "img_275d2e0a04947664.png",
+    "format": "png",
+    "size_bytes": 456918,
+    "width": 1280,
+    "height": 720,
+    "reference_name": "steam.png",
+    "description": "",
+    "uploaded_at": "2026-04-06T19:00:23.895098",
+    "original_filename": "steam.png"
+  },
+  "img_f55e6ad858a1abbe": {
+    "image_id": "img_f55e6ad858a1abbe",
+    "filename": "img_f55e6ad858a1abbe.jpg",
+    "format": "jpg",
+    "size_bytes": 81371,
+    "width": 1280,
+    "height": 720,
+    "reference_name": "python.jpg",
+    "description": "",
+    "uploaded_at": "2026-04-06T19:55:38.603229",
+    "original_filename": "python.jpg"
+  },
+  "img_a64f39cfc673a201": {
+    "image_id": "img_a64f39cfc673a201",
+    "filename": "img_a64f39cfc673a201.jpg",
+    "format": "jpg",
+    "size_bytes": 115406,
+    "width": 1280,
+    "height": 720,
+    "reference_name": "guido_van_rossum.jpg",
+    "description": "",
+    "uploaded_at": "2026-04-06T19:56:20.491073",
+    "original_filename": "guido_van_rossum.jpg"
+  },
+  "img_a642f334e5fd54a4": {
+    "image_id": "img_a642f334e5fd54a4",
+    "filename": "img_a642f334e5fd54a4.png",
+    "format": "png",
+    "size_bytes": 332133,
+    "width": 1280,
+    "height": 720,
+    "reference_name": "notch.png",
+    "description": "",
+    "uploaded_at": "2026-04-06T19:57:06.759720",
+    "original_filename": "notch.png"
+  }
+}

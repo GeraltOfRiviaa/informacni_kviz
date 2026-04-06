@@ -1,3 +1,76 @@
 {
-  "questions": []
+  "questions": [
+    {
+      "id": "q001",
+      "category": "firmy",
+      "image_id": "img_d6b65503d3d6bba5",
+      "answer_hash": "989eeec8227d64ea6039842141e7dfe71259e6b934f11b52c39fd8cd0833cf3a",
+      "answer_salt": "20643816f398f7b8468db5b02943c9e6",
+      "answer_length": 9,
+      "difficulty": "easy",
+      "description": "",
+      "created_at": "2026-04-06T18:58:39.882839",
+      "updated_at": "2026-04-06T18:58:39.882844"
+    },
+    {
+      "id": "q002",
+      "category": "firmy",
+      "image_id": "img_cd6b72500d847a5b",
+      "answer_hash": "8c5fe83f7cb95b1f47a375c7d56192ea411894a2a627ea3b59125a48486e8a2a",
+      "answer_salt": "c8f821b2dadd37e10a372790a43e85a6",
+      "answer_length": 6,
+      "difficulty": "easy",
+      "description": "",
+      "created_at": "2026-04-06T18:59:25.184332",
+      "updated_at": "2026-04-06T18:59:25.184338"
+    },
+    {
+      "id": "q003",
+      "category": "firmy",
+      "image_id": "img_275d2e0a04947664",
+      "answer_hash": "5561246fa9b949237d560fb581b72b571607338a1b7f66f4bc70cab971d40be7",
+      "answer_salt": "d0f9c8ba47f460ccd9dcc30a9b5885ed",
+      "answer_length": 5,
+      "difficulty": "medium",
+      "description": "",
+      "created_at": "2026-04-06T19:00:23.897082",
+      "updated_at": "2026-04-06T19:00:23.897086"
+    },
+    {
+      "id": "q004",
+      "category": "programovací jazyk",
+      "image_id": "img_f55e6ad858a1abbe",
+      "answer_hash": "ac11ebe79f5b5ff8bc753c1122d10c24e215140fab621c5824ad2c0b4cc850db",
+      "answer_salt": "0d91b27dc45266f83be3072a5c2307c1",
+      "answer_length": 6,
+      "difficulty": "medium",
+      "description": "",
+      "created_at": "2026-04-06T19:55:38.605409",
+      "updated_at": "2026-04-06T19:55:38.605413"
+    },
+    {
+      "id": "q005",
+      "category": "lidé",
+      "image_id": "img_a64f39cfc673a201",
+      "answer_hash": "09b575d901045f8bfd4a2baad502f49e0b2c50cbeaee3ac772e61c073bf59d5e",
+      "answer_salt": "299ea8c0e0ff7878599a44adf17dc31b",
+      "answer_length": 16,
+      "difficulty": "hard",
+      "description": "",
+      "created_at": "2026-04-06T19:56:20.493177",
+      "updated_at": "2026-04-06T19:57:21.159220"
+    },
+    {
+      "id": "q006",
+      "category": "lidé",
+      "image_id": "img_a642f334e5fd54a4",
+      "answer_hash": "f73b9beaab517dbba8b62cf0a311c9b9735cb23b8b4375a3f1b751b286b7c32f",
+      "answer_salt": "c0e090f51dba53a2d5910c481c978957",
+      "answer_length": 14,
+      "difficulty": "hard",
+      "description": "",
+      "created_at": "2026-04-06T19:57:06.761877",
+      "updated_at": "2026-04-06T19:57:06.761881"
+    }
+  ]
 }
