@@ -1,4 +1,4 @@
-"""Panel správce pro výběr otázek a spuštění kola bez odhalení odpovědí."""
+"""Panel správce pro správu a výběr otázek bez odhalení odpovědí."""
 
 import json
 import subprocess
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 class AdminPanel(tk.Frame):
-    """Admin panel pro výběr otázky a spuštění kola."""
+    """Admin panel pro výběr a správu otázek."""
     
     def __init__(self, parent, on_start_round: Callable = None, on_back: Callable = None, **kwargs):
         """Inicializuje admin panel."""
@@ -288,15 +288,6 @@ class AdminPanel(tk.Frame):
 
         ModernButton(
             button_frame,
-            "Spustit kolo",
-            command=self._handle_start_round,
-            bg_color=COLORS["success"],
-            width=20,
-            height=2
-        ).pack(side=tk.LEFT, padx=10)
-        
-        ModernButton(
-            button_frame,
             "Zpět na hlavní menu",
             command=self._handle_back,
             bg_color=COLORS["accent"],
@@ -313,18 +304,6 @@ class AdminPanel(tk.Frame):
             height=2
         ).pack(side=tk.LEFT, padx=10)
 
-    def _handle_start_round(self) -> None:
-        """Spustí kolo s vybranou otázkou."""
-        if not self.selected_question:
-            messagebox.showwarning("Chyba", "Prosím vyberte nejdříve otázku")
-            return
-
-        if self.on_start_round:
-            logger.info(f"Starting round from admin panel: {self.selected_question.id}")
-            self.on_start_round(self.selected_question)
-        else:
-            logger.warning("Callback on_start_round není nastaven")
-    
     def _refresh_list(self) -> None:
         """Obnoví seznam otázek podle filtrů."""
         category = self.category_var.get()

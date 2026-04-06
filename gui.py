@@ -579,6 +579,9 @@ class QuizApplication:
         cell_penalty = getattr(score_record, "penalty_cells", getattr(score_record, "cell_penalty", 0))
         letter_penalty = getattr(score_record, "penalty_letters", getattr(score_record, "letter_penalty", 0))
         wrong_penalty = getattr(score_record, "penalty_wrong", getattr(score_record, "wrong_penalty", 0))
+        current_team = self.quiz_app.get_current_team()
+        team_name = current_team.name if current_team else "-"
+        player_name = current_team.members[0] if current_team and current_team.members else "-"
 
         if is_player_set_finished:
             tk.Label(
@@ -588,6 +591,28 @@ class QuizApplication:
                 bg=COLORS["bg_secondary"],
                 fg=COLORS["fg_primary"],
             ).pack(pady=10)
+
+            identity_frame = tk.Frame(
+                results_frame,
+                bg=COLORS["accent"],
+            )
+            identity_frame.pack(fill=tk.X, padx=80, pady=(8, 12))
+
+            tk.Label(
+                identity_frame,
+                text=f"Tým: {team_name}",
+                font=FONTS["heading"],
+                bg=COLORS["accent"],
+                fg=COLORS["bg_primary"],
+            ).pack(pady=(10, 4))
+
+            tk.Label(
+                identity_frame,
+                text=f"Hráč: {player_name}",
+                font=FONTS["body"],
+                bg=COLORS["accent"],
+                fg=COLORS["bg_primary"],
+            ).pack(pady=(0, 10))
         else:
             question_id = getattr(score_record, "question_id", None)
             if question_id is None and self.current_round_screen:
