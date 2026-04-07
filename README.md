@@ -31,7 +31,7 @@ Desktop aplikace v Pythonu (Tkinter) pro školní týmovou soutěž s obrázkov�
 - `assets/images/` - runtime obrázky
 
 ## Lokální spuštění
-
+Popřípadě místo python main.py zkuste python.exe main.py
 ```bash
 python -m venv .venv
 .\.venv\Scripts\activate
